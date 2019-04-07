@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 
 
@@ -7,7 +6,6 @@ def percent_round_int(percent, x):
 
 
 class MyBar():
-
     """
         Wrap the parameters and the dynamics related
         to the bar the agent interacts with.
@@ -210,6 +208,9 @@ class ContinuousCatcher():
         self.fruit_update = self.fruit.update
         self.fruit_reset = self.fruit.reset
 
+        self.history = list()
+        self.total_reward = 0
+
     def reset(self):
         """
             Resets the game back to its initial state
@@ -219,6 +220,11 @@ class ContinuousCatcher():
         self.lives = self.init_lives
         self.fruit_reset()
         self.bar_reset()
+
+        self.total_reward = 0
+
+        self.history = list()
+
         return self.observe()
 
     def _collide_fruit(self):
@@ -280,7 +286,18 @@ class ContinuousCatcher():
             reward += self.rloss
             done = True
 
-        return self.observe(), reward, done
+        state = self.observe()
+
+        self.history.append(np.hstack([state, reward]))
+        self.total_reward += reward
+
+        return state, reward, done
+
+    def get_history(self):
+        return np.array(self.history)
+
+    def get_total_reward(self):
+        return self.total_reward
 
     def observe(self):
         """
