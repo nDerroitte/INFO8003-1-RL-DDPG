@@ -161,7 +161,7 @@ class ContinuousCatcher():
         """
         return 0.95
 
-    def __init__(self, width=64, height=64, init_lives=3, dt=30):
+    def __init__(self, width=640, height=640, init_lives=3, dt=30):
         """
         Wrapper for the full dynamics/parameters set of the game
 
