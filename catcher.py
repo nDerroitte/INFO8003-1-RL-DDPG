@@ -208,6 +208,8 @@ class ContinuousCatcher():
         self.fruit_update = self.fruit.update
         self.fruit_reset = self.fruit.reset
 
+        self.nb_fruit_catch = 0
+
         self.history = list()
         self.total_reward = 0
 
@@ -224,7 +226,7 @@ class ContinuousCatcher():
         self.total_reward = 0
 
         self.history = list()
-
+        self.nb_fruit_catch = 0
         return self.observe()
 
     def _collide_fruit(self):
@@ -241,7 +243,6 @@ class ContinuousCatcher():
 
         l1x, l1y = x1 - w1 / 2.0, y1 - h1 / 2.0
         l2x, l2y = x2 - w2 / 2.0, y2 - h2 / 2.0
-
         return (
                 l1y < l2y + h2 and
                 l2y < l1y + h1 and
@@ -273,6 +274,7 @@ class ContinuousCatcher():
             self.fruit_reset()
 
         if self._collide_fruit():
+            self.nb_fruit_catch += 1
             self.fruit_reset()
             reward += self.rpos
 
