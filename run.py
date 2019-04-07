@@ -1,10 +1,15 @@
 from catcher import *
+from gui import *
 import time
 
 if __name__ == "__main__":
     game = ContinuousCatcher()
     d = False
+    gui = GUI(game.width, game.height, game.bar_width, game.bar_height,
+              game.fruit_size)
+    gui.updateGUI(game)
     while d == False:
         act = game.observe()
         a, r, d = game.step(act)
-        print(r, d)
+        gui.updateGUI(game)
+    gui.closeGUI()
