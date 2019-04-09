@@ -5,7 +5,7 @@ def percent_round_int(percent, x):
     return np.round(percent * x).astype(int)
 
 
-class MyBar():
+class MyBar:
     """
         Wrap the parameters and the dynamics related
         to the bar the agent interacts with.
@@ -77,8 +77,45 @@ class MyBar():
 
         self.center = (n_x, y)
 
+    def observe_next_state(self, center_x, vel, dx):
+        """
+            Dynamics of the bar.
 
-class MyFruit():
+            Arguments:
+            ----------
+            - `dx`: Real-valued force
+                    (towards left when <0, right otherwise)
+        """
+
+        # Update velocity and position
+        vel += dx
+        vel *= 0.9
+
+        x, y = (center_x, self.center[1])
+        n_x = x + vel
+
+        """
+            Keeps the bar inside the grid.
+            No bounce, null speed if grid limits
+            are reached.
+        """
+        if n_x - self.width / 2.0 <= 0:
+            vel = 0.0
+            n_x = self.width / 2.0
+
+        if n_x + self.width / 2.0 >= self.grid_width:
+            vel = 0.0
+            n_x = self.grid_width - self.width / 2.0
+
+        center = (n_x, y)
+
+        return center, vel
+
+    def get_init_state(self):
+        return (self.grid_width / 2 - self.width / 2), 0.0
+
+
+class MyFruit:
     """
         Wrap the parameters and the dynamics related
         to the fruits.
@@ -136,6 +173,24 @@ class MyFruit():
 
         self.center = (x, n_y)
 
+    def observe_next_state(self, center, dt):
+        """
+        Observe the position of the fruit at a constant speed
+
+        Arguments:
+        ----------
+        - `dt`: (single-step) integration constant
+
+        """
+
+        # Updates fruit position
+        x, y = center
+        n_y = y + self.speed * dt
+
+        center = (x, n_y)
+
+        return center
+
     def reset(self):
         """
             Resets to initial state, randomly somewhere in the grid,
@@ -147,8 +202,15 @@ class MyFruit():
 
         self.center = (x, -1 * y)
 
+    def get_init_state(self):
+        a, b = np.random.random((2,))
+        x = np.floor((a * (self.grid_width - self.size[0])) + self.size[0] / 2.0)
+        y = np.floor(b * ((self.grid_height - self.size[1]) / 2.0))
 
-class ContinuousCatcher():
+        return x, -1 * y
+
+
+class ContinuousCatcher:
     """
         Based on `Eder Santana's` game idea.
         (https://github.com/EderSantana)
@@ -288,7 +350,7 @@ class ContinuousCatcher():
 
         state = self.observe()
 
-        self.history.append(np.hstack([state, reward]))
+        self.history.append(np.hstack([state, act, reward]))
         self.total_reward += reward
 
         return state, reward, done
@@ -308,3 +370,20 @@ class ContinuousCatcher():
         """
         return np.asarray([self.bar.center[0], self.bar.vel,
                            self.fruit.center[0], self.fruit.center[1]])
+
+    def observe_next_state(self, state, act):
+
+        dx = np.clip(act[0], -self.bar_speed, self.bar_speed)
+
+        bar_center, vel = self.bar.observe_next_state(state[0], state[1], dx)
+
+        fruit_center = self.fruit.observe_next_state((state[2], state[3]), self.fps)
+
+        return np.asarray([bar_center[0], vel,
+                           fruit_center[0], fruit_center[1]])
+
+    def get_init_state(self):
+        bar_state = self.bar.get_init_state()
+        fruit_state = self.fruit.get_init_state()
+
+        return bar_state[0], bar_state[1], fruit_state[0], fruit_state[1]
