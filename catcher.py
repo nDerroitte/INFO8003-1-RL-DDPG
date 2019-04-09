@@ -325,7 +325,7 @@ class ContinuousCatcher:
         # Clip the absolute force to the maximum bar speed
         # Equivalent to : max(min(act[0], self.bar_speed),
         #                     -self.bar_speed)
-        self.dx = np.clip(act[0], -self.bar_speed, self.bar_speed)
+        self.dx = np.clip(act, -self.bar_speed, self.bar_speed)
 
         # Grant reward related to tick and
         # whether fruit has been caught/missed
@@ -375,7 +375,7 @@ class ContinuousCatcher:
 
     def observe_next_state(self, state, act):
 
-        dx = np.clip(act[0], -self.bar_speed, self.bar_speed)
+        dx = np.clip(act, -self.bar_speed, self.bar_speed)
 
         bar_center, vel = self.bar.observe_next_state(state[0], state[1], dx)
 
