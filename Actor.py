@@ -1,72 +1,72 @@
 import numpy as np
-from keras.layers import Input, Dense, Concatenate
-from keras.models import Model
-from tensorflow.train import AdamOptimizer
-from keras.layers.advanced_activations import PReLU
-
-import tensorflow as tf
-
+from sklearn.tree import ExtraTreeRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.linear_model import LinearRegression
+import random
+#from keras.models import Sequential, Dense, Activation, optimizers
 
 class ActorNetwork(object):
-    def __init__(self, sess, state_dim, action_dim, GAMMA, TAU):
-        self.__GAMMA = GAMMA
-        self.__TAU = TAU
-
-        self.__state_dim = state_dim
+    def __init__(self, sess, state_dim, action_dim, GAMMA, TAU,states,rewards):
         self.__action_dim = action_dim
+        self.model = self.__create_model()
+        self.model.fit(states,rewards)
+        self.gamma = GAMMA
 
-        self.model, self.state = self.__create_model()
-        self.target_model, _ = self.__create_model()
 
-        # Placeholder (var to be fed) for the action gradients
-        self.action_grad_ph = tf.placeholder(tf.float32, [None, action_dim])
-        # Get the gradient of output wrt trainable_weights.
-        # action_gradient allow to start with different gradient for each
-        # action
-        # /!\ minus action_grad_ph because we need to do gradient ascent
-        # and not gradient descent!!!
-        delta_j = tf.gradients(self.model.output,  # dQ
-                               self.model.trainable_weights,  # da
-                               -self.action_grad_ph)  # dmu/dtheta
-        gradients = zip(delta_j, self.model.trainable_weights)
-        optim = AdamOptimizer(GAMMA)
-        self.train_op = optim.apply_gradients(gradients)
+    def train(self, states, rewards, next_states):
+        # self.model.fit(states, Q_values, epochs=150, batch_size=10)
+        # Q_model = KNeighborsRegressor(n_neighbors=1)
+        # Q_model.fit(states,rewards)
+        #print(states)
+        next_Q_values = self.model.predict(states)
+        rewards = rewards + self.gamma*next_Q_values
+        # for i in range(len(rewards)):
+        #     rewards[i] = rewards[i]+self.gamma*self.model.predict(states[i,:].reshape(1,-1))
+        self.model.fit(states,rewards)
 
-        init = tf.global_variables_initializer()
-        self.sess = sess
-        self.sess.run(init)
 
-    def train(self, states, action_gradients):
-        self.sess.run(self.train_op,
-                      feed_dict={self.state: states,
-                                 self.action_grad_ph: action_gradients})
-
-    def predict(self, states):
-        return self.model.predict(states)
+    def predict(self, state, action_list):
+        action = action_list[2]
+        score = 0
+        state.reshape(1,-1)
+        for el in action_list:
+            input_data = np.concatenate((state,[el])).reshape(1,-1)
+            #print(input_data)
+            predicted_score = self.model.predict(input_data)*random.uniform(1,1.03)
+            if predicted_score > score:
+                action = el
+                score = predicted_score
+        if random.random() > 0.95:
+            tmp_action_list = list(action_list)
+            tmp_action_list.remove(action)
+            action = tmp_action_list[random.randint(0,3)]
+        return action
 
     def target_predict(self, states):
-        return self.target_model.predict(states)
+        return 0
 
     def target_train(self):
-        weights_model = self.model.get_weights()
-        weights_target = self.target_model.get_weights()
+        # weights_model = self.model.get_weights()
+        # weights_target = self.target_model.get_weights()
 
-        for i in range(len(weights_model)):
-            weights_target[i] = (self.__TAU * weights_model[i]) + (
-                                (1 - self.__TAU) * weights_target[i])
-        self.target_model.set_weights(weights_target)
+        # for i in range(len(weights_model)):
+        #     weights_target[i] = (self.__TAU * weights_model[i]) + (
+        #                         (1 - self.__TAU) * weights_target[i])
+        # self.target_model.set_weights(weights_target)
+        return 0
 
     def __create_model(self):
         try:
-            input = Input(shape=(self.__state_dim, ))
+            # model = Sequential()
+            # model.add(Dense(16, input_shape=(4,), activation='relu'))
+            # model.add(Dense(32))
+            # model.add(Activation('relu'))
 
-            l1 = Dense(256, activation='relu')(input)
-            l2 = Dense(512, activation='relu')(l1)
+            # sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+            # model.compile(loss='mean_squared_error', optimizer=sgd)
 
-            output = Dense(1, activation=PReLU())(l2)
-
-            return Model(inputs=input, outputs=output), input
-
+            # return model
+            return LinearRegression()
         except ValueError as e:
             print("""Error: couldn't create the
                      actor network :{}.""".format(e.strerror))
