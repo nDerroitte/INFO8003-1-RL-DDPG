@@ -39,9 +39,9 @@ class GUI:
         self.window.blit(text3,(15,65))
         pygame.display.flip()
         # Video settings
-        img = pygame.surfarray.array3d(pygame.display.get_surface())
-        img = img.swapaxes(0, 1)
-        self.stream_img.append(img)
+        #img = pygame.surfarray.array3d(pygame.display.get_surface())
+        #img = img.swapaxes(0, 1)
+        #self.stream_img.append(img)
 
 
     def closeGUI(self):

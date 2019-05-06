@@ -3,9 +3,9 @@ import numpy as np
 from OU import *
 
 BUFFER_SIZE = 100000
-BATCH_SIZE = 8
-GAMMA = 0.7
-TAU = 0.5     #Target Network HyperParameters
+BATCH_SIZE = 32
+GAMMA = 0.99
+TAU = 0.01     #Target Network HyperParameters
 LRA = 0.001    #Learning rate for Actor
 LRC = 0.001     #Lerning rate for Critic
 action_dim = 1  # Move
@@ -19,12 +19,12 @@ def playGame(sess, states, actor, train_indicator, epsilon, action_dim, EPS):   
     a_t_original = actor.model.predict(states.reshape(1, states.shape[0]))
 
     if EPS > random.random():
-        a_t[0][0] = random.uniform(-5, 5)
-        """noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
-        a_t[0][0] = a_t[0][0] + noise_t[0][0]"""
+        #a_t[0][0] = random.uniform(-5, 5)
+        noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.75, 0.1)
+        a_t[0][0] = a_t[0][0] + noise_t[0][0]
     else:
         a_t[0][0] = a_t_original[0]
-
+    print(a_t_original[0], end = "\r")
     #print("Real action : {}. Action with OU : {}".format(a_t_original, a_t))
     return a_t, a_t_original
 

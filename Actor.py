@@ -1,5 +1,5 @@
 import numpy as np
-from keras.layers import Input, Dense, Concatenate
+from keras.layers import Input, Dense, Concatenate, Lambda
 from keras.models import Model
 from tensorflow.train import AdamOptimizer
 from keras.layers.advanced_activations import PReLU
@@ -8,9 +8,10 @@ import tensorflow as tf
 
 
 class ActorNetwork(object):
-    def __init__(self, sess, state_dim, action_dim, GAMMA, TAU):
+    def __init__(self, sess, state_dim, action_dim, GAMMA, TAU, MAX_F):
         self.__GAMMA = GAMMA
         self.__TAU = TAU
+        self.__MAX_F = MAX_F
 
         self.__state_dim = state_dim
         self.__action_dim = action_dim
@@ -64,8 +65,10 @@ class ActorNetwork(object):
             l2 = Dense(512, activation='relu')(l1)
 
             output = Dense(1, activation='tanh')(l1)
+            sc_output = Lambda(lambda x: x * self.__MAX_F)(output)
 
-            return Model(inputs=input, outputs=output), input
+
+            return Model(inputs=input, outputs=sc_output), input
 
         except ValueError as e:
             print("""Error: couldn't create the

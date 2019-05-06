@@ -192,8 +192,8 @@ class ContinuousCatcher():
 
         # Reward function
         self.rtick = 1.0
-        self.rpos = 2.0
-        self.rneg = -2.0
+        self.rpos = 2.0 *5
+        self.rneg = -2.0 *5
         self.rloss = 0.0
 
         # Builds the bar with its parameters
