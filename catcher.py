@@ -293,7 +293,12 @@ class ContinuousCatcher():
         self.history.append(np.hstack([state, reward]))
         self.total_reward += reward
 
-        return state, reward, done
+        x1, y1 = self.bar.center
+        x2, y2 = self.fruit.center
+
+        reward2 = - abs(x2 - x1)
+
+        return state, reward, done, reward2
 
     def get_history(self):
         return np.array(self.history)

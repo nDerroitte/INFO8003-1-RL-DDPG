@@ -63,7 +63,7 @@ class ActorNetwork(object):
             l1 = Dense(256, activation='relu')(input)
             l2 = Dense(512, activation='relu')(l1)
 
-            output = Dense(1, activation=PReLU())(l2)
+            output = Dense(1, activation='tanh')(l1)
 
             return Model(inputs=input, outputs=output), input
 
