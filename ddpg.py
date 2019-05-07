@@ -18,17 +18,17 @@ def playGame(sess, states, actor, train_indicator, epsilon, action_dim, EPS):   
     noise_t = np.zeros([1,action_dim])
     a_t_original = actor.model.predict(states.reshape(1, states.shape[0]))
 
-    if EPS > random.random():
-        #a_t[0][0] = random.uniform(-5, 5)
-        noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.75, 0.1)
-        a_t[0][0] = a_t[0][0] + noise_t[0][0]
+    if train_indicator and EPS > random.random():
+        a_t[0][0] = random.uniform(-5, 5)
+        #noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.75, 0.1)
+        #a_t[0][0] = a_t[0][0] + noise_t[0][0]
     else:
         a_t[0][0] = a_t_original[0]
     print(a_t_original[0], end = "\r")
     #print("Real action : {}. Action with OU : {}".format(a_t_original, a_t))
     return a_t, a_t_original
 
-def trainModels(buff, sess, st, r, st1, a, loss, actor, critic, train_indicator, episode, epsilon):
+def trainModels(buff, sess, st, r, st1, a, loss, actor, critic, episode, epsilon):
     epsilon -= 1.0/episode
     buff.add(st, a, r, st1)
 
@@ -45,11 +45,10 @@ def trainModels(buff, sess, st, r, st1, a, loss, actor, critic, train_indicator,
     for k in range(len(batch)):
         y_t[k] = rewards[k] + GAMMA*target_q_values[k]
 
-    if train_indicator:
-        loss += critic.model.train_on_batch([states,actions], y_t)
-        a_for_grad = actor.model.predict(states)
-        grads = critic.gradients(states, a_for_grad)
-        actor.train(states, grads)
-        actor.target_train()
-        critic.target_train()
+    loss += critic.model.train_on_batch([states,actions], y_t)
+    a_for_grad = actor.model.predict(states)
+    grads = critic.gradients(states, a_for_grad)
+    actor.train(states, grads)
+    actor.target_train()
+    critic.target_train()
     return loss
