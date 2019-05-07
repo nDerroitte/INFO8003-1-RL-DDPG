@@ -52,9 +52,10 @@ if __name__ == "__main__":
     critic = CriticNetwork(sess, state_dim, action_dim, BATCH_SIZE, TAU, LRC)
     buff = ReplayBuffer(BUFFER_SIZE)    #Create replay buffer
     loss = 0
-    nb_episode = 1
+    nb_episode = 100
     epsilon = 0.42
     EPS = 0.42
+    train = 1
     load_weights(actor, critic)
 
     for episode_nb in range(nb_episode):
@@ -64,19 +65,20 @@ if __name__ == "__main__":
         total_reward = 0
         while d == False:
             states =  game.observe()
-            act, tmp = playGame(sess, states, actor, 1, epsilon, action_dim, 0)
+            act, tmp = playGame(sess, states, actor, train, epsilon, action_dim, EPS)
             next_states, r, d, r2 = game.step(act[0])
             total_reward += r
-            loss = trainModels(buff, sess, states, r, next_states, act[0], loss, actor, critic, 1, episode_nb+1, epsilon)
-            save_weights(actor, critic)
+            if train:
+                loss = trainModels(buff, sess, states, r, next_states, act[0], loss, actor, critic, episode_nb+1, epsilon)
+                save_weights(actor, critic)
             gui.updateGUI(game, episode_nb)
         #buff.erase()
         print("")
         print("Number of fruit catch : {}".format(game.nb_fruit_catch))
         print("Total reward: {}".format(total_reward))
-        print("Saving weights!")
-        save_weights(actor, critic, True)
-
+        if train:
+            print("Saving weights!")
+            save_weights(actor, critic, True)
         EPS = epsilon - (episode_nb/nb_episode)*epsilon
         game.reset()
     gui.makeVideo("Catcher")
