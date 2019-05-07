@@ -41,8 +41,8 @@ if __name__ == "__main__":
         '--epsilon',
         help="""Value of the epsilon parameter
                 (regarding the exploration/exploitation dilemma)""",
-        type=int,
-        default=0
+        type=double,
+        default=0.0
     )
     # Arguments parsing
     args = parser.parse_args()
@@ -78,8 +78,8 @@ if __name__ == "__main__":
     # Looping on each episode
     for episode_nb in range(nb_episode):
         print("==============================================================")
-        print("Running simulation {}."+
-                 "Value of epsilon : {}".format(episode_nb, current_epsilon))
+        print("Running simulation {}.".format(episode_nb)+
+                 "Value of epsilon : {}".format(current_epsilon))
         # (Re)-initialise loop related variable
         d = False
         total_reward = 0
