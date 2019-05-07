@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
         EPS = epsilon - (episode_nb/nb_episode)*epsilon
         game.reset()
-    #gui.makeVideo("Catcher")
+    gui.makeVideo("Catcher")
     gui.closeGUI()
