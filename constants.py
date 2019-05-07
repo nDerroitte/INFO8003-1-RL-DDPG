@@ -10,4 +10,3 @@ class CST:
     SCREEN_COLOR  = (0, 0, 0)
     BAR_COLOR = (255, 255, 255)
     FRUIT_COLOR = (255, 0, 0)
-    GAMMA = 0.95

@@ -192,8 +192,8 @@ class ContinuousCatcher():
 
         # Reward function
         self.rtick = 1.0
-        self.rpos = 2.0 *5
-        self.rneg = -2.0 *5
+        self.rpos = 2.0
+        self.rneg = -2.0
         self.rloss = 0.0
 
         # Builds the bar with its parameters
@@ -296,9 +296,8 @@ class ContinuousCatcher():
         x1, y1 = self.bar.center
         x2, y2 = self.fruit.center
 
-        reward2 = - abs(x2 - x1)
 
-        return state, reward, done, reward2
+        return state, reward, done
 
     def get_history(self):
         return np.array(self.history)
