@@ -2,14 +2,22 @@
 
 import sys
 from argparse import ArgumentParser
+import matplotlib.pyplot as plt
 
 from Simulation import Simulation
-from Util import *
 
-QUESTIONS = ["2", "3", "5", "6", "all"]
-IMPLEMENTENTED_POLICY = ["Epsilon-Greedy", "Softmax"]
-IMPLEMENTENTED_MODEL = ["Linear Regression", "Extremely Randomized Trees", "Neural Networks"]
-IMPLEMENTENTED_Q_LEARNING_APPROXIMATOR_MODEL = ['Neural Networks', 'Radial Basis']
+
+IMPLEMENTED_POLICY = ["Epsilon-Greedy", "Actor-Critic"]
+
+IMPLEMENTED_ALGORITHMS = ["Fitted-Q Learning", "Q-Learning"]
+
+IMPLEMENTED_FITTED_Q_MODEL = ["Linear Regression", "Extremely Randomized Trees", "Neural Networks"]
+
+IMPLEMENTED_Q_LEARNING_APPROXIMATOR_MODEL = ['Neural Networks', 'Radial Basis']
+
+ACTOR_MODEL = ["Neural Network 1"]
+
+CRITIC_MODEL = ["Neural Network 1"]
 
 
 def main(args):
@@ -17,36 +25,74 @@ def main(args):
 
     simu = Simulation(gamma=args.gamma)
 
-    if args.question == "all":
-        display_graphs = False
-    else:
-        display_graphs = not args.no_graphs
+    final_rewards = None
 
-    if args.question is None:
-        final_rewards = None
+    if args.policy == IMPLEMENTED_POLICY[0]:
+        final_rewards, test_rewards = simu.run_greedy(args.nb_episode, args.episode_size, args.N, args.epsilon,
+                                           model_name=args.model_name,
+                                           algorithm=args.algorithm,
+                                           exploration_decay=args.exploration_decay,
+                                           epsilon_decay=args.epsilon_decay,
+                                           experience_replay=args.experience_replay,
+                                           alpha=args.alpha,
+                                           load_model=args.load_model,
+                                           make_video=args.make_video,
+                                           store_model=args.store_model,
+                                           run = args.run,
+                                           display=(not args.no_display)
+                                           )
 
-        if args.policy == IMPLEMENTENTED_POLICY[0]:
-            final_rewards, q = simu.run_greedy(args.nb_episode, args.episode_size, args.N, args.epsilon,
-                                               model_name=args.model_name,
-                                               exploration_decay=args.exploration_decay,
-                                               experience_replay=args.experience_replay,
-                                               alpha=args.alpha,
-                                               display=True
+    elif args.policy == IMPLEMENTED_POLICY[1]:
+        final_rewards, test_rewards = simu.run_actor_critic(args.nb_episode, args.episode_size,
+                                              actor_model_name=args.actor_model_name,
+                                              critic_model_name=args.critic_model_name,
+                                              epsilon=args.epsilon,
+                                              exploration_decay=args.exploration_decay,
+                                              epsilon_decay=args.epsilon_decay,
+                                              load_model=args.load_model,
+                                              make_video=args.make_video,
+                                              store_model=args.store_model,
+                                              run=args.run,
+                                              display=(not args.no_display)
                                                )
 
-        elif args.policy == IMPLEMENTENTED_POLICY[1]:
-            final_rewards, q = simu.run_softmax(args.nb_episode, args.episode_size, args.N,
-                                                args.temperature,
-                                                model_name=args.model_name,
-                                                experience_replay=args.experience_replay,
-                                                alpha=args.alpha,
-                                                display=True
-                                                )
+    else:
+        print(("Error: Unimplemented " + args.policy + " policy."),
+              file=sys.stderr)
 
-        else:
-            print(("Error: Unimplemented " + args.policy + " policy."),
-                  file=sys.stderr)
-            exit(-1)
+        exit(-1)
+
+    img = plt.figure("Reward Evolution while Training")
+
+    plt.title("Training Reward Evolution")
+    plt.xlabel("Episodes")
+    plt.ylabel("Episode's total reward")
+
+    plt.plot(range(0, len(final_rewards)), final_rewards)
+
+    plt.savefig(("reward_evol_" + str(args.policy)), bbox_inches='tight', dpi=100)
+
+    plt.show()
+
+    input()
+
+    plt.close()
+
+    img2 = plt.figure("Test Reward Evolution")
+
+    plt.title("Test Reward Evolution")
+    plt.xlabel("Episodes")
+    plt.ylabel("Episode's total reward")
+
+    plt.plot(range(0, len(test_rewards) * 50, 50), test_rewards)
+
+    plt.savefig(("test_reward_evol_" + str(args.policy)), bbox_inches='tight', dpi=100)
+
+    plt.show()
+
+    input()
+
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -55,28 +101,10 @@ if __name__ == "__main__":
     EXAMPLES:   (1) python main.py  --nb_episode 100 --episode_size 100 --policy "Epsilon-Greedy" --epsilon 0.5 
                         --model_name "Linear Regression"
                         
-                    - Launch the "Car on the Hill" Simulation with an Epsilon-Greedy policy using 
-                                            a Linear Regression Model
-                                            
-                (2) python main.py --question 2
-                
-                    - Launch the Question 2 of the Project 2's statement.
+                    - Launch the Simulation with an Epsilon-Greedy policy using a Linear Regression Model
     """
 
-    # Using argparse to select the different setting for the run
     parser = ArgumentParser(usage)
-
-    parser.add_argument(
-        '--question',
-        help="""
-                The question of the project that you would like to run.
-            (cfr. statement of Project 2 of Optimal Decision Making course)
-            
-        """,
-        type=str,
-        default=None,
-        choices=QUESTIONS
-    )
 
     parser.add_argument(
 
@@ -86,7 +114,7 @@ if __name__ == "__main__":
         """,
         type=int,
         default=100,
-        required="--question" not in sys.argv,
+        required=True,
     )
 
     parser.add_argument(
@@ -97,7 +125,7 @@ if __name__ == "__main__":
         """,
         type=int,
         default=100,
-        required="--question" not in sys.argv,
+        required=True,
     )
 
     parser.add_argument(
@@ -108,7 +136,7 @@ if __name__ == "__main__":
                                 you would like to run during the simulation.
         """,
         type=int,
-        default=100,
+        default=50,
     )
 
     parser.add_argument(
@@ -119,8 +147,20 @@ if __name__ == "__main__":
         """,
         type=str,
         default=None,
-        required="--question" not in sys.argv,
-        choices=IMPLEMENTENTED_POLICY
+        required=True,
+        choices=IMPLEMENTED_POLICY
+    )
+
+    parser.add_argument(
+
+        '--algorithm',
+        help="""
+                The Algorithm that you would like to use during the simulation.
+        """,
+        type=str,
+        default=None,
+        required="Actor-Critic" not in sys.argv,
+        choices=IMPLEMENTED_ALGORITHMS
     )
 
     parser.add_argument(
@@ -131,7 +171,7 @@ if __name__ == "__main__":
         """,
         type=float,
         default=None,
-        required="Epsilon-Greedy" in sys.argv,
+        required="Epsilon-Greedy" in sys.argv or "Actor-Critic" in sys.argv,
     )
 
     parser.add_argument(
@@ -141,35 +181,35 @@ if __name__ == "__main__":
                 The exploration decay of the Epsilon-greedy policy that will be run during the simulation.
                     (how the epsilon decrease with the number of episodes that has already been run)
         """,
-        type=float,
-        default=None,
+        dest='exploration_decay',
+        action='store_true',
     )
 
     parser.add_argument(
 
-        '--temperature',
+        '--epsilon_decay',
         help="""
-                The temperature parameter of the Softmax policy that will be run during the simulation.
+                The exploration decay of the Epsilon-greedy policy that will be run during the simulation.
+                    (how the epsilon decrease with the number of episodes that has already been run)
         """,
         type=float,
-        default=None,
-        required="Softmax" in sys.argv,
+        default=None
     )
 
     parser.add_argument(
 
         '--experience_replay',
         help="""
-                Wether or not to use experience replay during the simulation.
+                Whether or not to use experience replay during the simulation.
         """,
-        type=bool,
-        default=False,
+        dest='experience_replay',
+        action='store_true',
     )
 
-    if "--q_learning" in sys.argv:
-        models = IMPLEMENTENTED_Q_LEARNING_APPROXIMATOR_MODEL
+    if "Q-Learning" in sys.argv:
+        models = IMPLEMENTED_Q_LEARNING_APPROXIMATOR_MODEL
     else:
-        models = IMPLEMENTENTED_MODEL
+        models = IMPLEMENTED_FITTED_Q_MODEL
 
     parser.add_argument(
         '--model_name',
@@ -178,8 +218,39 @@ if __name__ == "__main__":
                                                     of the simulation.
         """,
         type=str,
-        required="--question" not in sys.argv,
+        required="Actor-Critic" not in sys.argv,
         choices=models
+    )
+
+    parser.add_argument(
+        '--actor_model_name',
+        help="""
+                        The model that will be used for the Actor or for the Actor-Critic algorithm
+                                                    of the simulation.
+        """,
+        type=str,
+        required="Actor-Critic"in sys.argv,
+        choices=ACTOR_MODEL
+    )
+
+    parser.add_argument(
+        '--critic_model_name',
+        help="""
+                        The model that will be used for the Critic or for the Actor-Critic algorithm
+                                                    of the simulation.
+        """,
+        type=str,
+        required="Actor-Critic"in sys.argv,
+        choices=CRITIC_MODEL
+    )
+
+    parser.add_argument(
+        '--no_display',
+        help="""
+                            Wether to display or not the GUI while training.
+             """,
+        dest='no_display',
+        action='store_true',
     )
 
     parser.add_argument(
@@ -215,27 +286,64 @@ if __name__ == "__main__":
 
     parser.add_argument(
 
-        '--q_learning',
-        help="""
-                Wether or not Parametric Q-Learning Algorithm should be used during the simulation.
-        """,
-        dest='no_graphs',
-        action='store_true',
-    )
-
-    parser.add_argument(
-
         '--alpha',
         help="""
                 The alpha parameter of the Parametric Q-Learning Algorithm that will be run during the simulation.
         """,
         type=float,
         default=None,
-        required="--q_learning" in sys.argv,
+        required="Q-Learning" in sys.argv,
+    )
+
+    parser.add_argument(
+        "--load_model",
+        help="""
+                Wether or not models should be loaded from files.
+            """,
+        dest='load_model',
+        action='store_true',
+
+    )
+
+    parser.add_argument(
+        "--make_video",
+        help="""
+                Wether or not video should be done of the running (WARNING : memory greedy).
+            """,
+        dest='make_video',
+        action='store_true',
+
+    )
+
+    parser.add_argument(
+        "--store_model",
+        help="""
+                Wether or not models should be stored.
+            """,
+        dest='store_model',
+        action='store_true',
+
+    )
+
+    parser.add_argument(
+        "--run",
+        help="""
+                Only run the simulation without any training;
+            """,
+        dest='run',
+        action='store_true',
+
     )
 
     parser.set_defaults(no_graphs=False)
+    parser.set_defaults(no_display=False)
     parser.set_defaults(q_learning=False)
+    parser.set_defaults(experience_replay=False)
+    parser.set_defaults(exploration_decay=False)
+    parser.set_defaults(load_model=False)
+    parser.set_defaults(make_video=False)
+    parser.set_defaults(store_model=False)
+    parser.set_defaults(run=False)
 
     args = parser.parse_args()
 

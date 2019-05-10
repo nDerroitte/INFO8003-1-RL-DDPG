@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 def percent_round_int(percent, x):
@@ -351,9 +352,12 @@ class ContinuousCatcher:
             done = True
 
         state = self.observe()
-
         self.history.append(np.hstack([state, act, reward]))
         self.total_reward += reward
+
+        x1, y1 = self.bar.center
+        x2, y2 = self.fruit.center
+
 
         return state, reward, done
 
@@ -370,7 +374,7 @@ class ContinuousCatcher:
             :return numpy array of the form:
                         [bar_center_x, bar_velocity, fruit_center_x, fruit_center_y]
         """
-        return np.asarray([self.bar.center[0], self.bar.vel,
+        return np.array([self.bar.center[0], self.bar.vel,
                            self.fruit.center[0], self.fruit.center[1]])
 
     def observe_next_state(self, state, act):
@@ -381,7 +385,7 @@ class ContinuousCatcher:
 
         fruit_center = self.fruit.observe_next_state((state[2], state[3]), self.fps)
 
-        return np.asarray([bar_center[0], vel,
+        return np.array([bar_center[0], vel,
                            fruit_center[0], fruit_center[1]])
 
     def get_init_state(self):
@@ -389,3 +393,15 @@ class ContinuousCatcher:
         fruit_state = self.fruit.get_init_state()
 
         return bar_state[0], bar_state[1], fruit_state[0], fruit_state[1]
+
+    def random_move(self):
+        return random.uniform(-self.bar_speed, self.bar_speed)
+
+    def get_action_space_dim(self):
+        return 1
+
+    def get_state_space_dim(self):
+        return 4
+
+    def get_max_abs_output(self):
+        return self.bar_speed

@@ -8,6 +8,8 @@ class RBFLayer(Layer):
         self.units = units
         self.gamma = K.cast_to_floatx(gamma)
 
+        self.mu = None
+
     def build(self, input_shape):
         self.mu = self.add_weight(name='mu',
                                   shape=(int(input_shape[1]), self.units),
