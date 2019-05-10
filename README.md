@@ -9,6 +9,8 @@ When called without option, the code runs without training, for a single episode
 * `--epsilon` **float**: Initial value of the Epsilon parameter for the decaying e-greedy policy and the OU process. Should be between 0 and 1.
 * `--nb_episodes` **int** : Number of episodes (>0).
 * `--train` **{0, 1}** : 1 if the user wants to retrain the network. 0 otherwise
+* `--video` **{0, 1}** : 1 if the user wants to create a video of the simulation. 0 otherwise
+* `--plot` **{0, 1}** : 1 if the user wants to make plot of the simulation. 0 otherwise
 
 ### Training the agent
 In order to train the agent, one should put the `train` argument to 1. 
