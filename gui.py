@@ -3,7 +3,7 @@ import cv2
 from constants import CST
 
 class GUI:
-    def __init__(self, width, height, bar_width, bar_height, fruit_size, dt):
+    def __init__(self, width, height, bar_width, bar_height, fruit_size, dt, v):
         """
         Parameters:
         -----------
@@ -33,6 +33,7 @@ class GUI:
         self.run_time = pygame.time.Clock()
         self.stream_img = []
         self.dt = dt
+        self.video_indicator = v
 
     def updateGUI(self, environemnt, nb_episode):
         """
@@ -80,9 +81,10 @@ class GUI:
         self.window.blit(text3,(15,65))
         pygame.display.flip()
         # Video settings
-        img = pygame.surfarray.array3d(pygame.display.get_surface())
-        img = img.swapaxes(0, 1)
-        self.stream_img.append(img)
+        if self.video_indicator:
+            img = pygame.surfarray.array3d(pygame.display.get_surface())
+            img = img.swapaxes(0, 1)
+            self.stream_img.append(img)
 
 
     def closeGUI(self):

@@ -6,6 +6,7 @@ from actor import *
 from replay import *
 from critic import *
 from OU import *
+from plot import *
 import time
 import h5py
 import tensorflow as tf
@@ -41,13 +42,31 @@ if __name__ == "__main__":
         '--epsilon',
         help="""Value of the epsilon parameter
                 (regarding the exploration/exploitation dilemma)""",
-        type=double,
+        type=float,
         default=0.0
+    )
+
+    # Plot
+    parser.add_argument(
+        '--plot',
+        help="""1 if we want the plot. 0 otherwise""",
+        type=int,
+        default = 0
+    )
+
+    # Video
+    parser.add_argument(
+        '--video',
+        help="""1 if we want to make a video. 0 otherwise""",
+        type=int,
+        default = 0
     )
     # Arguments parsing
     args = parser.parse_args()
     nb_episode = args.nb_episodes
     train = args.train
+    video = args.video
+    plot = args.plot
     max_epsilon = args.epsilon
 
     # Initiate variables
@@ -59,7 +78,7 @@ if __name__ == "__main__":
     # Initiate game related objects
     game = ContinuousCatcher(dt=30)
     gui = GUI(game.width, game.height, game.bar_width, game.bar_height,
-              game.fruit_size, game.dt)
+              game.fruit_size, game.dt, video)
 
     #Tensorflow GPU optimization
     config = tf.ConfigProto()
@@ -75,8 +94,16 @@ if __name__ == "__main__":
 
     load_weights(actor, critic)
 
+    if plot:
+        plot_object = Plot()
+
     # Looping on each episode
     for episode_nb in range(nb_episode):
+        # Plot making
+        if(episode_nb%10 == 0 and plot):
+            plot_object.prepare_plot(sess, actor, action_dim, game, gui,
+                                     episode_nb)
+
         print("==============================================================")
         print("Running simulation {}.".format(episode_nb)+
                  "Value of epsilon : {}".format(current_epsilon))
@@ -95,8 +122,7 @@ if __name__ == "__main__":
             # Train the model if necessery
             if train:
                 loss = trainModels(buff, sess, states, r, next_states, act[0],
-                                   loss, actor, critic, episode_nb+1,
-                                   max_epsilon)
+                                   loss, actor, critic)
                 save_weights(actor, critic)
             # Update GUI
             gui.updateGUI(game, episode_nb)
@@ -113,5 +139,8 @@ if __name__ == "__main__":
         # Reset the game
         game.reset()
     # Create a video sequence and close GUI
-    gui.makeVideo("Catcher")
+    if video:
+        gui.makeVideo("Catcher")
+    if plot:
+        plot_object.make_plot()
     gui.closeGUI()
