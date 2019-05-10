@@ -18,7 +18,7 @@ class GUI:
 
     def updateGUI(self, environemnt, nb_episode):
         self.__draw(environemnt, nb_episode)
-        self.run_time.tick(self.dt)
+        # self.run_time.tick(self.dt)
 
     def __draw(self, environemnt, nb_episode):
         self.window.fill(CST.SCREEN_COLOR)
@@ -39,9 +39,9 @@ class GUI:
         self.window.blit(text3,(15,65))
         pygame.display.flip()
         # Video settings
-        img = pygame.surfarray.array3d(pygame.display.get_surface())
-        img = img.swapaxes(0, 1)
-        self.stream_img.append(img)
+        # img = pygame.surfarray.array3d(pygame.display.get_surface())
+        # img = img.swapaxes(0, 1)
+        # self.stream_img.append(img)
 
 
     def closeGUI(self):
