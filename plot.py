@@ -32,6 +32,7 @@ class Plot:
         """
         Create the evolution plot
         """
+        print("Making the plots!")
         plt.plot(self.x, self.y1)
         plt.ylabel('Number of fruit catch')
         plt.xlabel('Number of episodes')
