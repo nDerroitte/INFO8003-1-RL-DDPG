@@ -26,6 +26,7 @@ if __name__ == "__main__":
     buff = ReplayBuffer(BUFFER_SIZE)    #Create replay buffer
     loss = 0
 
+<<<<<<< HEAD
     action_list = list(range(-10,10))
     # action_list = [-4,0, 4]
     training_set = np.array([[]])
@@ -77,12 +78,37 @@ if __name__ == "__main__":
     for i in range(20):
         actor.train_batch(states, actions, rewards, new_states,action_list)
     for episode_nb in range(1500):
+=======
+    action_list = [-5, -2, 0, 2, 5]
+    training_set = np.array([[]])
+    rewards_list = np.array([])
+    next_states_set = np.array([[]])
+
+    state = game.observe()
+
+    act = action_list[1]
+    next_states, r, d = game.step([act])
+    training_set = np.concatenate((training_set,[np.append(state,[act])]),axis=1)
+    rewards_list = np.append(rewards_list,r)
+    next_states_set = np.concatenate((next_states_set,[np.append(next_states,[act])]),axis=1)
+
+    act = action_list[3]
+    next_states, r, d = game.step([act])
+    training_set = np.concatenate((training_set,[np.append(state,[act])]))
+    rewards_list = np.append(rewards_list,r)
+    next_states_set = np.concatenate((next_states_set,[np.append(next_states,[act])]))
+    
+    actor = ActorNetwork(sess, state_dim, action_dim, BATCH_SIZE, TAU, training_set, rewards_list)
+
+    for episode_nb in range(500):
+>>>>>>> 103ae2d33a992523b0816c93d1ae5c54f79bac47
         print("Running simulation {}.".format(episode_nb))
         d = False
         while d == False:
             state =  game.observe()
             act = actor.predict(state,action_list)
             next_states, r, d = game.step([act])
+<<<<<<< HEAD
             # gui.updateGUI(game, episode_nb)
             buff.add(state,act,r,next_states)
         print("nb fruits caught",game.nb_fruit_catch)
@@ -101,3 +127,15 @@ if __name__ == "__main__":
             actor.train_batch(states, actions, rewards, new_states,action_list)
     # gui.makeVideo("VideoName")
     # gui.closeGUI()
+=======
+            # loss = trainModels(buff, sess, states, r ,next_states, act, loss,actor, critic, 1)
+            gui.updateGUI(game, episode_nb)
+            training_set = np.concatenate((training_set,[np.append(state,[act])]))
+            next_states_set = np.concatenate((next_states_set,[np.append(next_states,[act])]))
+            rewards_list = np.append(rewards_list,r)
+        print("nb fruits caught",game.nb_fruit_catch)
+        game.reset()
+        actor.train(training_set,rewards_list,next_states_set)
+    gui.makeVideo("VideoName")
+    gui.closeGUI()
+>>>>>>> 103ae2d33a992523b0816c93d1ae5c54f79bac47
