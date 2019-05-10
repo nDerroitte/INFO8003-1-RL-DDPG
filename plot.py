@@ -1,11 +1,13 @@
-import matplotlib.pyplot as plt
+import matplotlib
+#matplotlib.use("macOSX")
+from matplotlib import pyplot as plt
 from ddpg import *
 
 class Plot:
     def __init__(self):
-        self.x = []
-        self.y1 = []
-        self.y2 = []
+        self.__x = []
+        self.__y1 = []
+        self.__y2 = []
 
     def prepare_plot(self, sess, actor, action_dim, game, gui, episode_nb):
         """
@@ -22,27 +24,29 @@ class Plot:
         gui : GUI object
         """
         # Run a simple simulation
-        self.x.append(episode_nb)
+        self.__x.append(episode_nb)
         fruits, reward = runSimple(game, sess, actor, action_dim, gui,
                                    episode_nb)
-        self.y1.append(fruits)
-        self.y2.append(reward)
+        self.__y1.append(fruits)
+        self.__y2.append(reward)
 
     def make_plot(self):
         """
         Create the evolution plot
         """
+        fig = plt.figure()
         print("Making the plots!")
-        plt.plot(self.x, self.y1)
+        plt.plot(self.__x, self.__y1)
         plt.ylabel('Number of fruit catch')
         plt.xlabel('Number of episodes')
         plt.savefig('fruits.png')
         ######
-        plt.plot(self.x, self.y2)
+        fig = plt.figure()
+        plt.plot(self.__x, self.__y2)
         plt.ylabel('Total reward')
         plt.xlabel('Number of episodes')
         plt.savefig('reward.png')
-
+        print("done")
 
 def runSimple(game, sess, actor, action_dim, gui, episode_nb):
     print("==============================================================")
